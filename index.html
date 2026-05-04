@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HabitForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700;12..96,800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ═══════════════════════════════════════════
+   HABITFORGE — Single File App
+   Theme: Deep Slate + Phosphor Green
+   Font: Bricolage Grotesque + DM Mono
+═══════════════════════════════════════════ */
+:root {
+  --bg:      #080c0e;
+  --bg2:     #0f1518;
+  --bg3:     #161c20;
+  --bg4:     #1e262b;
+  --line:    #232d33;
+  --line2:   #2e3a40;
+  --tx:      #dde8ec;
+  --tx2:     #7a9099;
+  --tx3:     #3d5560;
+  --lime:    #7fff6a;
+  --lime2:   #a8ff96;
+  --lime3:   #3dcc2a;
+  --amber:   #ffb347;
+  --sky:     #4db8ff;
+  --rose:    #ff5f72;
+  --r:       8px;
+  --rl:      16px;
+  --sb:      240px;
+  --ease:    cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;-webkit-font-smoothing:antialiased;}
+body{
+  font-family:'Bricolage Grotesque',sans-serif;
+  background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;
+}
+/* scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px;}
+
+/* ── grain overlay ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ════════════════════════════════════
+   SETUP SCREEN
+════════════════════════════════════ */
+#setup-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:2rem;
+}
+.setup-wrap{
+  width:100%;max-width:460px;
+  animation:fadeUp .5s var(--ease) both;
+}
+.brand{
+  display:flex;align-items:center;gap:.6rem;
+  font-size:1.4rem;font-weight:800;letter-spacing:-.03em;
+  margin-bottom:2.5rem;
+}
+.brand-hex{
+  width:34px;height:34px;background:var(--lime);border-radius:8px;
+  display:grid;place-items:center;
+  font-size:1rem;color:var(--bg);font-weight:900;
+  box-shadow:0 0 24px rgba(127,255,106,.3);
+}
+.setup-title{
+  font-size:2rem;font-weight:800;letter-spacing:-.04em;line-height:1.1;
+  margin-bottom:.6rem;
+}
+.setup-title span{color:var(--lime);}
+.setup-sub{color:var(--tx2);font-size:.88rem;line-height:1.65;margin-bottom:2rem;}
+.setup-card{
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--rl);
+  padding:1.75rem;display:flex;flex-direction:column;gap:1.1rem;
+}
+.fgrp{display:flex;flex-direction:column;gap:.35rem;}
+.fgrp label{
+  font-size:.7rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--tx3);
+}
+input,textarea,select{
+  background:var(--bg3);border:1px solid var(--line2);
+  border-radius:var(--r);color:var(--tx);
+  font-family:'DM Mono',monospace;font-size:.83rem;
+  padding:.6rem .85rem;outline:none;width:100%;
+  transition:border-color .15s var(--ease);
+}
+input:focus,textarea:focus,select:focus{border-color:var(--lime);}
+input::placeholder,textarea::placeholder{color:var(--tx3);}
+textarea{resize:vertical;}
+select option{background:var(--bg3);}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  border:none;border-radius:var(--r);cursor:pointer;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+  transition:.15s var(--ease);
+}
+.btn-lime{
+  background:var(--lime);color:var(--bg);
+  padding:.72rem 1.4rem;font-size:.88rem;width:100%;
+  box-shadow:0 0 0 rgba(127,255,106,0);
+}
+.btn-lime:hover{background:var(--lime2);box-shadow:0 0 20px rgba(127,255,106,.2);}
+.btn-lime:active{transform:scale(.98);}
+.btn-ghost{
+  background:transparent;border:1px solid var(--line2);color:var(--tx2);
+  padding:.6rem 1.1rem;font-size:.82rem;
+}
+.btn-ghost:hover{border-color:var(--tx2);color:var(--tx);}
+.btn-sm{padding:.4rem .85rem!important;font-size:.75rem;width:auto!important;flex-shrink:0;}
+.btn-lime.btn-sm{width:auto!important;padding:.4rem .85rem!important;}
+.btn-danger{
+  background:rgba(255,95,114,.08);border:1px solid rgba(255,95,114,.2);
+  color:var(--rose);padding:.38rem .75rem;font-size:.72rem;
+}
+.btn-danger:hover{background:rgba(255,95,114,.16);}
+
+.err{color:var(--rose);font-size:.78rem;padding:.3rem 0;}
+.hidden{display:none!important;}
+
+.schema-block{
+  margin-top:1.25rem;padding:1rem 1.1rem;
+  background:rgba(127,255,106,.03);border:1px solid rgba(127,255,106,.12);
+  border-radius:var(--r);font-size:.78rem;color:var(--tx2);line-height:1.6;
+}
+.schema-block strong{color:var(--lime);}
+.schema-toggle{
+  background:none;border:none;color:var(--lime);font-size:.78rem;
+  cursor:pointer;text-decoration:underline;padding:0;font-family:inherit;
+  display:block;margin-top:.5rem;
+}
+.schema-sql{
+  margin-top:.75rem;background:var(--bg3);border:1px solid var(--line);
+  border-radius:var(--r);padding:.85rem;
+  font-family:'DM Mono',monospace;font-size:.72rem;color:var(--tx2);
+  white-space:pre-wrap;word-break:break-all;max-height:260px;overflow-y:auto;
+  line-height:1.6;
+}
+.copy-sql-btn{
+  margin-top:.5rem;background:var(--bg3);border:1px solid var(--line2);
+  color:var(--tx2);border-radius:6px;padding:.35rem .75rem;
+  font-size:.72rem;cursor:pointer;font-family:inherit;
+  transition:.15s var(--ease);
+}
+.copy-sql-btn:hover{color:var(--lime);border-color:var(--lime);}
+
+/* ════════════════════════════════════
+   APP LAYOUT
+════════════════════════════════════ */
+#app-screen{display:none;min-height:100vh;}
+#app-screen.active{display:flex;}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sb);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.sb-brand{
+  display:flex;align-items:center;gap:.55rem;
+  padding:1.4rem 1.1rem 1rem;
+  font-size:1rem;font-weight:800;letter-spacing:-.02em;
+  border-bottom:1px solid var(--line);
+}
+.sb-brand .brand-hex{width:26px;height:26px;font-size:.75rem;border-radius:6px;}
+.sb-nav{display:flex;flex-direction:column;gap:.15rem;padding:.8rem .65rem;flex:1;}
+.nav-btn{
+  display:flex;align-items:center;gap:.55rem;
+  background:none;border:none;border-radius:7px;
+  color:var(--tx2);padding:.55rem .75rem;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:.82rem;font-weight:600;
+  cursor:pointer;transition:.13s var(--ease);text-align:left;width:100%;
+}
+.nav-btn:hover{background:var(--bg3);color:var(--tx);}
+.nav-btn.active{background:rgba(127,255,106,.08);color:var(--lime);}
+.nav-ico{font-size:.95rem;width:18px;text-align:center;flex-shrink:0;}
+
+.sb-foot{
+  padding:.9rem 1.1rem;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:.6rem;
+}
+.sb-pts{
+  flex:1;
+  font-size:.72rem;color:var(--tx2);
+  font-family:'DM Mono',monospace;
+}
+.sb-pts strong{color:var(--lime);font-size:.9rem;display:block;}
+.sb-reset{
+  background:none;border:none;color:var(--tx3);font-size:1rem;
+  cursor:pointer;transition:.13s;padding:.2rem;
+}
+.sb-reset:hover{color:var(--rose);}
+
+/* Main */
+.main{flex:1;overflow-y:auto;padding:2rem 2.2rem;min-height:100vh;}
+
+/* Views */
+.view{display:none;}
+.view.active{display:block;animation:fadeUp .22s var(--ease) both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+.vh{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.75rem;flex-wrap:gap;gap:.75rem;
+}
+.vh h2{font-size:1.6rem;font-weight:800;letter-spacing:-.04em;}
+.vtag{
+  font-family:'DM Mono',monospace;font-size:.72rem;color:var(--tx2);
+  background:var(--bg3);border:1px solid var(--line);border-radius:6px;
+  padding:.3rem .65rem;white-space:nowrap;
+}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-bottom:2rem;}
+.sc{
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--rl);
+  padding:1.1rem 1.25rem;
+}
+.sc.hi{border-color:rgba(127,255,106,.2);background:rgba(127,255,106,.03);}
+.sc-val{font-size:1.75rem;font-weight:800;letter-spacing:-.04em;line-height:1;}
+.sc.hi .sc-val{color:var(--lime);}
+.sc-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-top:.3rem;}
+
+/* Section label */
+.slabel{
+  font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--tx3);margin:1.6rem 0 .7rem;
+}
+
+/* Habit cards */
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem;}
+.hcard{
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--rl);
+  padding:1.1rem;cursor:pointer;
+  transition:border-color .15s,transform .15s;
+}
+.hcard:hover{border-color:var(--line2);transform:translateY(-2px);}
+.hcard.checked{border-color:rgba(127,255,106,.35);background:rgba(127,255,106,.03);}
+.hcard-emoji{font-size:1.8rem;margin-bottom:.45rem;}
+.hcard-name{font-size:.9rem;font-weight:700;margin-bottom:.2rem;line-height:1.3;}
+.hcard-streak{font-size:.72rem;color:var(--amber);font-family:'DM Mono',monospace;}
+.hcard-pts{font-size:.68rem;color:var(--tx3);margin-top:.1rem;}
+.hcard-btn{
+  width:100%;margin-top:.85rem;padding:.45rem;border-radius:6px;
+  border:1px solid var(--line2);background:var(--bg3);
+  color:var(--tx2);font-family:'Bricolage Grotesque',sans-serif;
+  font-size:.75rem;font-weight:700;cursor:pointer;transition:.13s;
+}
+.hcard-btn:hover{border-color:var(--lime);color:var(--lime);}
+.hcard-btn.done{background:rgba(127,255,106,.08);color:var(--lime);border-color:rgba(127,255,106,.25);cursor:default;}
+
+/* Activity */
+.afeed{display:flex;flex-direction:column;gap:.4rem;}
+.afeed-item{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.6rem .9rem;background:var(--bg2);border:1px solid var(--line);
+  border-radius:var(--r);font-size:.78rem;
+}
+.afeed-ico{font-size:1rem;flex-shrink:0;}
+.afeed-tx{flex:1;}
+.afeed-dt{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--tx3);}
+
+/* Campaigns */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem;}
+.ccard{
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--rl);
+  padding:1.35rem;transition:border-color .15s;
+}
+.ccard:hover{border-color:var(--line2);}
+.ccard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.85rem;}
+.ccard-emoji{font-size:2rem;}
+.ccard-status{
+  font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  padding:.18rem .5rem;border-radius:4px;
+}
+.cs-active{background:rgba(127,255,106,.1);color:var(--lime);}
+.cs-off{background:rgba(61,85,96,.3);color:var(--tx3);}
+.ccard-name{font-size:.98rem;font-weight:800;margin-bottom:.25rem;}
+.ccard-desc{font-size:.76rem;color:var(--tx2);line-height:1.5;margin-bottom:.85rem;}
+.ccard-meta{
+  display:grid;grid-template-columns:1fr 1fr;gap:.4rem .75rem;
+  padding-top:.85rem;border-top:1px solid var(--line);
+}
+.cmeta{font-size:.68rem;}
+.cmeta-l{color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.1rem;}
+.cmeta-v{font-family:'DM Mono',monospace;color:var(--tx);}
+.pbar{height:4px;background:var(--bg3);border-radius:2px;margin:.7rem 0;overflow:hidden;}
+.pfill{height:100%;background:var(--lime);border-radius:2px;transition:width .5s;}
+.ccard-acts{margin-top:.85rem;display:flex;gap:.45rem;}
+
+/* Check-in */
+.cilist{display:flex;flex-direction:column;gap:.65rem;}
+.ciitem{
+  display:flex;align-items:center;gap:1.1rem;
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--rl);
+  padding:1.1rem 1.3rem;transition:border-color .15s;
+}
+.ciitem.done{border-color:rgba(127,255,106,.25);}
+.ci-emoji{font-size:1.9rem;flex-shrink:0;}
+.ci-info{flex:1;}
+.ci-name{font-size:.95rem;font-weight:700;margin-bottom:.2rem;}
+.ci-streak{font-size:.72rem;color:var(--amber);}
+.ci-pts{font-size:.68rem;color:var(--tx3);margin-top:.1rem;}
+.ci-act{flex-shrink:0;}
+.ci-btn{
+  padding:.5rem 1rem;border-radius:7px;border:none;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:.8rem;font-weight:700;
+  cursor:pointer;background:var(--lime);color:var(--bg);transition:.13s;
+}
+.ci-btn:hover{background:var(--lime2);}
+.ci-btn.done-btn{
+  background:rgba(127,255,106,.08);color:var(--lime);
+  border:1px solid rgba(127,255,106,.25);cursor:default;
+}
+
+/* Rewards */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.85rem;}
+.rcard{
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--rl);
+  padding:1.2rem;position:relative;overflow:hidden;
+  transition:border-color .15s;
+}
+.rcard.earned{border-color:rgba(127,255,106,.3);}
+.rcard.earned::after{
+  content:'';position:absolute;top:0;right:0;
+  width:50px;height:50px;
+  background:radial-gradient(circle at top right,rgba(127,255,106,.15),transparent 70%);
+}
+.rcard-emoji{font-size:1.7rem;margin-bottom:.4rem;}
+.rcard-name{font-size:.92rem;font-weight:800;margin-bottom:.2rem;}
+.rcard-desc{font-size:.75rem;color:var(--tx2);line-height:1.5;margin-bottom:.7rem;}
+.rtags{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;}
+.rtag{
+  font-size:.65rem;font-weight:600;padding:.18rem .45rem;border-radius:4px;
+  background:var(--bg3);color:var(--tx2);
+}
+.rtag-bonus{background:rgba(255,179,71,.08);color:var(--amber);}
+.rtag-streak{background:rgba(77,184,255,.08);color:var(--sky);}
+.rtag-earned{background:rgba(127,255,106,.08);color:var(--lime);}
+.rdel{position:absolute;top:.75rem;right:.75rem;}
+
+/* Modals */
+.modal-wrap{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(6px);z-index:1000;
+  display:none;align-items:center;justify-content:center;padding:1rem;
+}
+.modal-wrap.open{display:flex;}
+.modal{
+  background:var(--bg2);border:1px solid var(--line2);border-radius:var(--rl);
+  width:100%;max-width:500px;max-height:90vh;overflow-y:auto;
+  animation:fadeUp .18s var(--ease) both;
+}
+.mhead{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.35rem 1.35rem 0;
+}
+.mhead h3{font-size:1rem;font-weight:800;letter-spacing:-.02em;}
+.mclose{
+  background:none;border:none;color:var(--tx2);font-size:.9rem;
+  cursor:pointer;padding:.25rem;transition:.13s;
+}
+.mclose:hover{color:var(--rose);}
+.mbody{padding:1.2rem 1.35rem;display:flex;flex-direction:column;gap:.9rem;}
+.mfoot{padding:0 1.35rem 1.35rem;display:flex;justify-content:flex-end;gap:.6rem;}
+.mfoot .btn-lime{width:auto;padding:.65rem 1.3rem;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+
+/* Day picker */
+.daypick{display:flex;flex-direction:column;gap:.4rem;}
+.drow{display:flex;gap:.35rem;}
+.dbtn{
+  width:33px;height:33px;border-radius:50%;border:1px solid var(--line2);
+  background:var(--bg3);color:var(--tx2);
+  font-family:'DM Mono',monospace;font-size:.7rem;
+  cursor:pointer;transition:.13s;
+}
+.dbtn.on{background:var(--lime);color:var(--bg);border-color:var(--lime);}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:1.75rem;right:1.75rem;z-index:2000;
+  background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r);
+  padding:.8rem 1.1rem;font-size:.82rem;font-weight:600;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:300px;
+  animation:fadeUp .2s var(--ease) both;
+}
+.toast.ok{border-left:3px solid var(--lime);}
+.toast.err{border-left:3px solid var(--rose);}
+.toast.inf{border-left:3px solid var(--sky);}
+
+/* Empty */
+.empty{
+  text-align:center;padding:2.5rem 1rem;color:var(--tx3);
+  border:1px dashed var(--line);border-radius:var(--rl);
+}
+.empty-ico{font-size:2rem;display:block;margin-bottom:.6rem;}
+
+/* Streak calendar */
+.cal-wrap{margin-top:.5rem;}
+.cal-grid{display:flex;gap:3px;flex-wrap:wrap;}
+.cal-day{
+  width:11px;height:11px;border-radius:2px;background:var(--bg3);
+  transition:.15s;
+}
+.cal-day.hit{background:var(--lime3);}
+.cal-day.today-dot{outline:1px solid var(--lime);outline-offset:1px;}
+.cal-legend{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;font-size:.65rem;color:var(--tx3);}
+.cal-legend .cal-day{flex-shrink:0;}
+
+/* Responsive */
+@media(max-width:800px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .sidebar{display:none;}
+  .main{padding:1.2rem;}
+}
+/* First-run hero card */
+.first-run{
+  grid-column:1/-1;position:relative;overflow:hidden;
+  background:var(--bg2);border:1px solid rgba(127,255,106,.2);
+  border-radius:var(--rl);padding:3rem 2rem;text-align:center;
+}
+.fr-glow{
+  position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:320px;height:200px;
+  background:radial-gradient(ellipse,rgba(127,255,106,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.fr-inner{position:relative;z-index:1;max-width:420px;margin:0 auto;}
+.fr-icon{
+  font-size:2.5rem;display:inline-block;
+  background:rgba(127,255,106,.1);border:1px solid rgba(127,255,106,.2);
+  border-radius:16px;width:60px;height:60px;line-height:60px;
+  margin-bottom:1.1rem;color:var(--lime);
+}
+.fr-title{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.5rem;}
+.fr-sub{font-size:.83rem;color:var(--tx2);line-height:1.65;margin-bottom:1.5rem;}
+.fr-btn{width:auto!important;padding:.72rem 1.75rem!important;font-size:.9rem;margin:0 auto;display:inline-flex!important;}
+.fr-hints{
+  display:flex;justify-content:center;gap:1.5rem;
+  margin-top:1.75rem;flex-wrap:wrap;
+}
+.fr-hint{
+  display:flex;align-items:center;gap:.4rem;
+  font-size:.75rem;color:var(--tx3);
+}
+.fr-hint span{font-size:.9rem;}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     SETUP SCREEN
+════════════════════════════════════ -->
+<div id="setup-screen">
+  <div class="setup-wrap">
+    <div class="brand">
+      <div class="brand-hex">H</div>
+      HabitForge
+    </div>
+    <h1 class="setup-title">Connect your<br><span>Supabase project</span></h1>
+    <p class="setup-sub">One-time setup. Your credentials are saved locally in your browser and never leave your device.</p>
+
+    <div class="setup-card">
+      <div class="fgrp">
+        <label>Supabase Project URL</label>
+        <input type="text" id="s-url" placeholder="https://xxxx.supabase.co"/>
+      </div>
+      <div class="fgrp">
+        <label>Supabase Anon / Public Key</label>
+        <input type="password" id="s-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."/>
+      </div>
+      <div id="s-err" class="err hidden"></div>
+      <button class="btn btn-lime" onclick="App.connect()">
+        Save & Launch →
+      </button>
+    </div>
+
+    <div class="schema-block">
+      <strong>First time?</strong> Run the SQL schema below in your Supabase project's SQL Editor before connecting.
+      <button class="schema-toggle" onclick="toggleSchema()">Show SQL schema ↓</button>
+      <div id="schema-sql-block" class="hidden">
+        <div class="schema-sql" id="schema-sql-text"></div>
+        <button class="copy-sql-btn" onclick="copySchema()">Copy SQL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     APP SCREEN
+════════════════════════════════════ -->
+<div id="app-screen">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="brand-hex">H</div>
+      HabitForge
+    </div>
+    <nav class="sb-nav">
+      <button class="nav-btn active" data-v="dashboard" onclick="App.nav('dashboard')">
+        <span class="nav-ico">◈</span> Dashboard
+      </button>
+      <button class="nav-btn" data-v="campaigns" onclick="App.nav('campaigns')">
+        <span class="nav-ico">◉</span> Campaigns
+      </button>
+      <button class="nav-btn" data-v="checkin" onclick="App.nav('checkin')">
+        <span class="nav-ico">◎</span> Daily Check-in
+      </button>
+      <button class="nav-btn" data-v="rewards" onclick="App.nav('rewards')">
+        <span class="nav-ico">⬡</span> Rewards
+      </button>
+    </nav>
+    <div class="sb-foot">
+      <div class="sb-pts">
+        <strong id="sb-pts">0</strong> total pts
+      </div>
+      <button class="sb-reset" title="Reset setup" onclick="App.resetSetup()">⚙</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- Dashboard -->
+    <section id="view-dashboard" class="view active">
+      <div class="vh">
+        <h2>Dashboard</h2>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <div class="vtag" id="dash-date"></div>
+          <button style="background:var(--lime);color:var(--bg);border:none;border-radius:8px;padding:.4rem 1rem;font-family:'Bricolage Grotesque',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;" onclick="App.openModal('campaign-modal')">+ New Campaign</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="sc"><div class="sc-val" id="st-active">–</div><div class="sc-lbl">Active Campaigns</div></div>
+        <div class="sc hi"><div class="sc-val" id="st-streak">–</div><div class="sc-lbl">Best Streak 🔥</div></div>
+        <div class="sc"><div class="sc-val" id="st-pts">–</div><div class="sc-lbl">Total Points</div></div>
+        <div class="sc"><div class="sc-val" id="st-ci">–</div><div class="sc-lbl">All Check-ins</div></div>
+      </div>
+      <div class="slabel">Today's Habits</div>
+      <div id="dash-habits" class="hgrid"></div>
+      <div class="slabel">Recent Activity</div>
+      <div id="dash-feed" class="afeed"></div>
+    </section>
+
+    <!-- Campaigns -->
+    <section id="view-campaigns" class="view">
+      <div class="vh">
+        <h2>Campaigns</h2>
+        <button class="btn btn-lime btn-sm" onclick="App.openModal('campaign-modal')">+ New Campaign</button>
+      </div>
+      <div id="campaigns-grid" class="cgrid"></div>
+    </section>
+
+    <!-- Check-in -->
+    <section id="view-checkin" class="view">
+      <div class="vh">
+        <h2>Daily Check-in</h2>
+        <div class="vtag" id="ci-date"></div>
+      </div>
+      <p style="color:var(--tx2);font-size:.83rem;margin-bottom:1.25rem;line-height:1.6;">
+        Mark habits you completed today. One check-in per habit per day.
+      </p>
+      <div id="checkin-list" class="cilist"></div>
+    </section>
+
+    <!-- Rewards -->
+    <section id="view-rewards" class="view">
+      <div class="vh">
+        <h2>Rewards</h2>
+        <button class="btn btn-lime btn-sm" onclick="App.openModal('reward-modal')">+ New Reward</button>
+      </div>
+      <p style="color:var(--tx2);font-size:.83rem;margin-bottom:1.25rem;line-height:1.6;">
+        Set streak or check-in milestones. Bonus points are awarded automatically when you hit the target.
+      </p>
+      <div id="rewards-grid" class="rgrid"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ════════════════════════════════════
+     MODALS
+════════════════════════════════════ -->
+
+<!-- Campaign Modal -->
+<div id="campaign-modal" class="modal-wrap" style="display:none" onclick="App.modalOutside(event,'campaign-modal')">
+  <div class="modal">
+    <div class="mhead">
+      <h3>New Campaign</h3>
+      <button class="mclose" onclick="App.closeModal('campaign-modal')">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="fgrp"><label>Campaign Name *</label><input id="c-name" type="text" placeholder="e.g. Morning Run"/></div>
+      <div class="fgrp"><label>Description</label><textarea id="c-desc" rows="2" placeholder="What's this habit about?"></textarea></div>
+      <div class="frow">
+        <div class="fgrp"><label>Start Date</label><input id="c-start" type="date"/></div>
+        <div class="fgrp"><label>End Date (optional)</label><input id="c-end" type="date"/></div>
+      </div>
+      <div class="frow">
+        <div class="fgrp"><label>Points per Check-in</label><input id="c-pts" type="number" value="10" min="1" max="9999"/></div>
+        <div class="fgrp"><label>Emoji</label><input id="c-emoji" type="text" placeholder="🏃" maxlength="4"/></div>
+      </div>
+      <div class="fgrp">
+        <label>Frequency</label>
+        <select id="c-freq" onchange="App.freqChange()">
+          <option value="daily">Every day</option>
+          <option value="weekdays">Weekdays only (Mon–Fri)</option>
+          <option value="weekends">Weekends only (Sat–Sun)</option>
+          <option value="custom">Custom days…</option>
+        </select>
+      </div>
+      <div id="custom-days" class="daypick hidden">
+        <label style="font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;">Select active days</label>
+        <div class="drow">
+          <button type="button" class="dbtn" data-d="0">Su</button>
+          <button type="button" class="dbtn" data-d="1">Mo</button>
+          <button type="button" class="dbtn" data-d="2">Tu</button>
+          <button type="button" class="dbtn" data-d="3">We</button>
+          <button type="button" class="dbtn" data-d="4">Th</button>
+          <button type="button" class="dbtn" data-d="5">Fr</button>
+          <button type="button" class="dbtn" data-d="6">Sa</button>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="App.closeModal('campaign-modal')">Cancel</button>
+      <button class="btn btn-lime" onclick="App.createCampaign()">Create Campaign</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reward Modal -->
+<div id="reward-modal" class="modal-wrap" style="display:none" onclick="App.modalOutside(event,'reward-modal')">
+  <div class="modal">
+    <div class="mhead">
+      <h3>New Reward Milestone</h3>
+      <button class="mclose" onclick="App.closeModal('reward-modal')">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="fgrp"><label>Reward Name *</label><input id="r-name" type="text" placeholder="e.g. 7-Day Warrior"/></div>
+      <div class="fgrp"><label>Description</label><textarea id="r-desc" rows="2" placeholder="Describe the achievement"></textarea></div>
+      <div class="fgrp">
+        <label>Campaign (optional)</label>
+        <select id="r-camp"><option value="">Any campaign</option></select>
+      </div>
+      <div class="frow">
+        <div class="fgrp">
+          <label>Trigger Type</label>
+          <select id="r-ttype">
+            <option value="streak">Streak (consecutive days)</option>
+            <option value="total">Total check-ins</option>
+            <option value="points">Total points</option>
+          </select>
+        </div>
+        <div class="fgrp"><label>Target Value</label><input id="r-tval" type="number" value="7" min="1"/></div>
+      </div>
+      <div class="frow">
+        <div class="fgrp"><label>Bonus Points</label><input id="r-bonus" type="number" value="50" min="0"/></div>
+        <div class="fgrp"><label>Badge Emoji</label><input id="r-emoji" type="text" placeholder="🏆" maxlength="4"/></div>
+      </div>
+      <div class="fgrp">
+        <label>Repeatable?</label>
+        <select id="r-repeat">
+          <option value="false">One-time only</option>
+          <option value="true">Repeating (fires each time target is hit)</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="App.closeModal('reward-modal')">Cancel</button>
+      <button class="btn btn-lime" onclick="App.createReward()">Create Reward</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   HabitForge App — Single User, No Auth
+═══════════════════════════════════════════ */
+
+const SCHEMA_SQL = `-- HabitForge Single-User Schema
+-- Run once in Supabase SQL Editor
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Single row settings/points store
+CREATE TABLE IF NOT EXISTS hf_settings (
+  id            TEXT PRIMARY KEY DEFAULT 'user',
+  total_points  INTEGER NOT NULL DEFAULT 0,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO hf_settings (id) VALUES ('user') ON CONFLICT DO NOTHING;
+
+-- Campaigns
+CREATE TABLE IF NOT EXISTS hf_campaigns (
+  id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name               TEXT NOT NULL,
+  description        TEXT DEFAULT '',
+  emoji              TEXT DEFAULT '📌',
+  start_date         DATE NOT NULL DEFAULT CURRENT_DATE,
+  end_date           DATE,
+  points_per_checkin INTEGER NOT NULL DEFAULT 10,
+  frequency          TEXT NOT NULL DEFAULT 'daily',
+  custom_days        INTEGER[],
+  is_active          BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Daily check-ins
+CREATE TABLE IF NOT EXISTS hf_checkins (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  campaign_id   UUID NOT NULL REFERENCES hf_campaigns(id) ON DELETE CASCADE,
+  checked_date  DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(campaign_id, checked_date)
+);
+
+-- Reward milestones
+CREATE TABLE IF NOT EXISTS hf_rewards (
+  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name           TEXT NOT NULL,
+  description    TEXT DEFAULT '',
+  emoji          TEXT DEFAULT '🏆',
+  campaign_id    UUID REFERENCES hf_campaigns(id) ON DELETE SET NULL,
+  trigger_type   TEXT NOT NULL DEFAULT 'streak',
+  trigger_value  INTEGER NOT NULL DEFAULT 7,
+  bonus_points   INTEGER NOT NULL DEFAULT 50,
+  is_repeatable  BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Earned rewards log
+CREATE TABLE IF NOT EXISTS hf_earned (
+  id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  reward_id  UUID NOT NULL REFERENCES hf_rewards(id) ON DELETE CASCADE,
+  earned_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Disable RLS (single user, anon key access only)
+ALTER TABLE hf_settings  DISABLE ROW LEVEL SECURITY;
+ALTER TABLE hf_campaigns DISABLE ROW LEVEL SECURITY;
+ALTER TABLE hf_checkins  DISABLE ROW LEVEL SECURITY;
+ALTER TABLE hf_rewards   DISABLE ROW LEVEL SECURITY;
+ALTER TABLE hf_earned    DISABLE ROW LEVEL SECURITY;
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_ci_camp ON hf_checkins(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_ci_date ON hf_checkins(checked_date);
+`;
+
+// ── Populate schema display ────────────────
+document.getElementById('schema-sql-text').textContent = SCHEMA_SQL;
+
+function toggleSchema(){
+  const b = document.getElementById('schema-sql-block');
+  const t = document.querySelector('.schema-toggle');
+  b.classList.toggle('hidden');
+  t.textContent = b.classList.contains('hidden') ? 'Show SQL schema ↓' : 'Hide SQL schema ↑';
+}
+function copySchema(){
+  navigator.clipboard.writeText(SCHEMA_SQL).then(()=>toast('SQL copied!','ok'));
+}
+
+// ── State ──────────────────────────────────
+const App = (() => {
+  let sb = null;
+  let campaigns = [];
+  let checkins  = [];
+  let rewards   = [];
+  let totalPts  = 0;
+
+  // ── Boot ──────────────────────────────────
+  async function boot() {
+    const url = localStorage.getItem('hf_url');
+    const key = localStorage.getItem('hf_key');
+    if (url && key) {
+      await launch(url, key, false);
+    }
+  }
+
+  async function connect() {
+    const url = document.getElementById('s-url').value.trim();
+    const key = document.getElementById('s-key').value.trim();
+    const err = document.getElementById('s-err');
+    err.classList.add('hidden');
+    if (!url || !key) { showErr('s-err','Please fill in both fields.'); return; }
+    try {
+      await launch(url, key, true);
+    } catch(e) { showErr('s-err', e.message); }
+  }
+
+  async function launch(url, key, save) {
+    sb = window.supabase.createClient(url, key);
+    // Quick test
+    const { error } = await sb.from('hf_settings').select('id').single();
+    if (error) throw new Error('Could not connect. Check credentials or run the SQL schema first. ('+error.message+')');
+    if (save) { localStorage.setItem('hf_url', url); localStorage.setItem('hf_key', key); }
+    await loadAll();
+    showApp();
+  }
+
+  function resetSetup() {
+    if (!confirm('Reset Supabase credentials? You will need to reconnect.')) return;
+    localStorage.removeItem('hf_url'); localStorage.removeItem('hf_key');
+    document.getElementById('app-screen').classList.remove('active');
+    document.getElementById('setup-screen').style.display = 'flex';
+  }
+
+  // ── Data ──────────────────────────────────
+  async function loadAll() {
+    const [c, ci, r, e, s] = await Promise.all([
+      sb.from('hf_campaigns').select('*').order('created_at',{ascending:false}),
+      sb.from('hf_checkins').select('*').order('checked_date',{ascending:false}),
+      sb.from('hf_rewards').select('*').order('created_at',{ascending:false}),
+      sb.from('hf_earned').select('*'),
+      sb.from('hf_settings').select('*').eq('id','user').single(),
+    ]);
+    campaigns = c.data || [];
+    checkins  = ci.data || [];
+    rewards   = r.data || [];
+    // Attach earned
+    const earnedMap = {};
+    (e.data||[]).forEach(row => { earnedMap[row.reward_id] = earnedMap[row.reward_id] || []; earnedMap[row.reward_id].push(row); });
+    rewards.forEach(r => r._earned = earnedMap[r.id] || []);
+    totalPts = s.data?.total_points || 0;
+  }
+
+  // ── Show app ──────────────────────────────
+  function showApp() {
+    document.getElementById('setup-screen').style.display = 'none';
+    const app = document.getElementById('app-screen');
+    app.classList.add('active');
+    const today = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    document.getElementById('dash-date').textContent = today;
+    document.getElementById('ci-date').textContent = today;
+    updatePtsUI();
+    renderDashboard();
+    renderCampaigns();
+    renderCheckin();
+    renderRewards();
+  }
+
+  // ── Nav ───────────────────────────────────
+  function nav(v) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-'+v).classList.add('active');
+    document.querySelector('[data-v="'+v+'"]').classList.add('active');
+  }
+
+  // ── Dashboard ─────────────────────────────
+  function renderDashboard() {
+    const today = todayStr();
+    const active = campaigns.filter(c => c.is_active);
+    const todayCIs = checkins.filter(c => c.checked_date === today);
+    let bestStreak = 0;
+    active.forEach(c => { const s = streak(c.id); if (s > bestStreak) bestStreak = s; });
+
+    document.getElementById('st-active').textContent  = active.length;
+    document.getElementById('st-streak').textContent  = bestStreak + ' 🔥';
+    document.getElementById('st-pts').textContent     = totalPts.toLocaleString();
+    document.getElementById('st-ci').textContent      = checkins.length;
+
+    // Today's habits
+    const due = active.filter(c => isDue(c));
+    const hc = document.getElementById('dash-habits');
+    if (!campaigns.length) {
+      hc.innerHTML = `<div class="first-run" style="grid-column:1/-1">
+        <div class="fr-glow"></div>
+        <div class="fr-inner">
+          <div class="fr-icon">⬡</div>
+          <h3 class="fr-title">Start your first habit</h3>
+          <p class="fr-sub">Track any habit daily — exercise, reading, meditation, hydration. Build streaks and earn points as you stay consistent.</p>
+          <button class="btn btn-lime fr-btn" onclick="App.openModal('campaign-modal')">
+            + Create your first campaign
+          </button>
+          <div class="fr-hints">
+            <div class="fr-hint"><span>🔥</span> Streaks track consecutive days</div>
+            <div class="fr-hint"><span>⭐</span> Earn points on every check-in</div>
+            <div class="fr-hint"><span>🏆</span> Unlock rewards at milestones</div>
+          </div>
+        </div>
+      </div>`;
+    } else if (!due.length) {
+      hc.innerHTML = '<div class="empty" style="grid-column:1/-1"><span class="empty-ico">✅</span><p>No habits due today — enjoy the rest!</p></div>';
+    } else {
+      hc.innerHTML = due.map(c => {
+        const s = streak(c.id); const done = todayCIs.some(ci => ci.campaign_id === c.id);
+        return `<div class="hcard ${done?'checked':''}">
+          <div class="hcard-emoji">${c.emoji||'📌'}</div>
+          <div class="hcard-name">${esc(c.name)}</div>
+          <div class="hcard-streak">🔥 ${s} day streak</div>
+          <div class="hcard-pts">+${c.points_per_checkin} pts</div>
+          <button class="hcard-btn ${done?'done':''}" onclick="App.checkin('${c.id}')" ${done?'disabled':''}>
+            ${done ? '✓ Done today' : 'Check in'}
+          </button>
+        </div>`;
+      }).join('');
+    } // end else (due habits exist)
+
+    // Feed
+    const feed = document.getElementById('dash-feed');
+    const recent = checkins.slice(0, 10);
+    if (!recent.length) { feed.innerHTML = '<div class="empty"><p>No activity yet. Start checking in!</p></div>'; return; }
+    feed.innerHTML = recent.map(ci => {
+      const c = campaigns.find(x => x.id === ci.campaign_id);
+      return `<div class="afeed-item">
+        <span class="afeed-ico">${c?.emoji||'📌'}</span>
+        <span class="afeed-tx">Checked in <strong>${esc(c?.name||'Unknown')}</strong></span>
+        <span class="afeed-dt">${ci.checked_date}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Campaigns ─────────────────────────────
+  function renderCampaigns() {
+    const el = document.getElementById('campaigns-grid');
+    if (!campaigns.length) {
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><span class="empty-ico">🚀</span><p>No campaigns yet. Create your first!</p></div>'; return;
+    }
+    el.innerHTML = campaigns.map(c => {
+      const s = streak(c.id);
+      const total = checkins.filter(ci => ci.campaign_id === c.id).length;
+      const prog = c.end_date ? calcProg(c) : null;
+      const freqLbl = {daily:'Every day',weekdays:'Weekdays',weekends:'Weekends',custom:'Custom'}[c.frequency]||c.frequency;
+      return `<div class="ccard">
+        <div class="ccard-top">
+          <div class="ccard-emoji">${c.emoji||'📌'}</div>
+          <div class="ccard-status ${c.is_active?'cs-active':'cs-off'}">${c.is_active?'Active':'Ended'}</div>
+        </div>
+        <div class="ccard-name">${esc(c.name)}</div>
+        <div class="ccard-desc">${esc(c.description||'')}</div>
+        ${prog!==null?`<div class="pbar"><div class="pfill" style="width:${prog}%"></div></div>`:''}
+        <div class="ccard-meta">
+          <div class="cmeta"><div class="cmeta-l">Streak</div><div class="cmeta-v">🔥 ${s} days</div></div>
+          <div class="cmeta"><div class="cmeta-l">Check-ins</div><div class="cmeta-v">${total}</div></div>
+          <div class="cmeta"><div class="cmeta-l">Pts/day</div><div class="cmeta-v">${c.points_per_checkin}</div></div>
+          <div class="cmeta"><div class="cmeta-l">Schedule</div><div class="cmeta-v">${freqLbl}</div></div>
+        </div>
+        <div class="ccard-acts">
+          ${c.is_active
+            ? `<button class="btn btn-ghost btn-sm" onclick="App.toggleCampaign('${c.id}',false)">Archive</button>`
+            : `<button class="btn btn-ghost btn-sm" onclick="App.toggleCampaign('${c.id}',true)">Reactivate</button>`}
+          <button class="btn btn-danger" onclick="App.deleteCampaign('${c.id}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function createCampaign() {
+    const name  = document.getElementById('c-name').value.trim();
+    const desc  = document.getElementById('c-desc').value.trim();
+    const start = document.getElementById('c-start').value || todayStr();
+    const end   = document.getElementById('c-end').value || null;
+    const pts   = parseInt(document.getElementById('c-pts').value)||10;
+    const emoji = document.getElementById('c-emoji').value.trim()||'📌';
+    const freq  = document.getElementById('c-freq').value;
+    if (!name) { toast('Please enter a campaign name.','err'); return; }
+    let customDays = null;
+    if (freq === 'custom') {
+      customDays = [...document.querySelectorAll('.dbtn.on')].map(b => +b.dataset.d);
+      if (!customDays.length) { toast('Select at least one day.','err'); return; }
+    }
+    const { data, error } = await sb.from('hf_campaigns').insert({
+      name, description:desc, start_date:start, end_date:end,
+      points_per_checkin:pts, emoji, frequency:freq, custom_days:customDays, is_active:true
+    }).select().single();
+    if (error) { toast(error.message,'err'); return; }
+    campaigns.unshift(data);
+    closeModal('campaign-modal');
+    clearCampForm();
+    renderCampaigns(); renderDashboard(); renderCheckin();
+    toast('Campaign "'+name+'" created!','ok');
+  }
+
+  function clearCampForm() {
+    ['c-name','c-desc','c-start','c-end','c-emoji'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('c-pts').value='10';
+    document.getElementById('c-freq').value='daily';
+    document.getElementById('custom-days').classList.add('hidden');
+    document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('on'));
+  }
+
+  async function toggleCampaign(id, active) {
+    await sb.from('hf_campaigns').update({is_active:active}).eq('id',id);
+    const c = campaigns.find(x => x.id===id); if (c) c.is_active = active;
+    renderCampaigns(); renderDashboard(); renderCheckin();
+    toast(active ? 'Campaign reactivated!' : 'Campaign archived.', 'inf');
+  }
+
+  async function deleteCampaign(id) {
+    if (!confirm('Delete this campaign and all its check-ins? This cannot be undone.')) return;
+    await sb.from('hf_checkins').delete().eq('campaign_id',id);
+    await sb.from('hf_campaigns').delete().eq('id',id);
+    campaigns = campaigns.filter(c => c.id!==id);
+    checkins  = checkins.filter(ci => ci.campaign_id!==id);
+    renderCampaigns(); renderDashboard(); renderCheckin();
+    toast('Campaign deleted.','inf');
+  }
+
+  function freqChange() {
+    const v = document.getElementById('c-freq').value;
+    document.getElementById('custom-days').classList.toggle('hidden', v!=='custom');
+  }
+
+  // ── Check-in ──────────────────────────────
+  function renderCheckin() {
+    const el = document.getElementById('checkin-list');
+    const today = todayStr();
+    const due = campaigns.filter(c => c.is_active && isDue(c));
+    if (!due.length) {
+      el.innerHTML = '<div class="empty"><span class="empty-ico">😴</span><p>No habits due today. Go rest!</p></div>'; return;
+    }
+    el.innerHTML = due.map(c => {
+      const s = streak(c.id);
+      const done = checkins.some(ci => ci.campaign_id===c.id && ci.checked_date===today);
+      return `<div class="ciitem ${done?'done':''}">
+        <div class="ci-emoji">${c.emoji||'📌'}</div>
+        <div class="ci-info">
+          <div class="ci-name">${esc(c.name)}</div>
+          <div class="ci-streak">🔥 ${s} day streak</div>
+          <div class="ci-pts">+${c.points_per_checkin} pts per check-in</div>
+        </div>
+        <div class="ci-act">
+          ${done
+            ? '<button class="ci-btn done-btn">✓ Done</button>'
+            : `<button class="ci-btn" onclick="App.checkin('${c.id}')">Check In</button>`}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function checkin(campaignId) {
+    const today = todayStr();
+    if (checkins.some(ci => ci.campaign_id===campaignId && ci.checked_date===today)) {
+      toast('Already checked in today!','inf'); return;
+    }
+    const camp = campaigns.find(c => c.id===campaignId); if (!camp) return;
+    const { data, error } = await sb.from('hf_checkins').insert({
+      campaign_id:campaignId, checked_date:today
+    }).select().single();
+    if (error) { toast(error.message,'err'); return; }
+    checkins.unshift(data);
+    totalPts += camp.points_per_checkin;
+    await sb.from('hf_settings').update({total_points:totalPts}).eq('id','user');
+    updatePtsUI();
+    renderDashboard(); renderCheckin();
+    toast('✓ Checked in! +'+camp.points_per_checkin+' pts','ok');
+    await checkMilestones(campaignId);
+  }
+
+  // ── Rewards ───────────────────────────────
+  function renderRewards() {
+    // Populate campaign select in modal
+    const sel = document.getElementById('r-camp');
+    sel.innerHTML = '<option value="">Any campaign</option>' +
+      campaigns.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+
+    const el = document.getElementById('rewards-grid');
+    if (!rewards.length) {
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><span class="empty-ico">🏆</span><p>No rewards yet. Create a milestone!</p></div>'; return;
+    }
+    el.innerHTML = rewards.map(r => {
+      const earned = r._earned && r._earned.length > 0;
+      const camp = campaigns.find(c => c.id===r.campaign_id);
+      const trigLbl = {streak:`${r.trigger_value}-day streak`,total:`${r.trigger_value} check-ins`,points:`${r.trigger_value} points`}[r.trigger_type];
+      return `<div class="rcard ${earned?'earned':''}">
+        <button class="btn btn-danger rdel" onclick="App.deleteReward('${r.id}')">✕</button>
+        <div class="rcard-emoji">${r.emoji||'🏆'}</div>
+        <div class="rcard-name">${esc(r.name)}</div>
+        <div class="rcard-desc">${esc(r.description||'')}</div>
+        <div class="rtags">
+          <span class="rtag rtag-streak">🎯 ${trigLbl}</span>
+          <span class="rtag rtag-bonus">+${r.bonus_points} pts</span>
+          ${r.is_repeatable?'<span class="rtag">🔁 Repeating</span>':''}
+          ${camp?`<span class="rtag">📌 ${esc(camp.name)}</span>`:''}
+          ${earned?`<span class="rtag rtag-earned">✓ Earned</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function createReward() {
+    const name   = document.getElementById('r-name').value.trim();
+    const desc   = document.getElementById('r-desc').value.trim();
+    const campId = document.getElementById('r-camp').value || null;
+    const ttype  = document.getElementById('r-ttype').value;
+    const tval   = parseInt(document.getElementById('r-tval').value)||7;
+    const bonus  = parseInt(document.getElementById('r-bonus').value)||50;
+    const emoji  = document.getElementById('r-emoji').value.trim()||'🏆';
+    const repeat = document.getElementById('r-repeat').value === 'true';
+    if (!name) { toast('Please enter a reward name.','err'); return; }
+    const { data, error } = await sb.from('hf_rewards').insert({
+      name, description:desc, campaign_id:campId,
+      trigger_type:ttype, trigger_value:tval,
+      bonus_points:bonus, emoji, is_repeatable:repeat
+    }).select().single();
+    if (error) { toast(error.message,'err'); return; }
+    data._earned = [];
+    rewards.push(data);
+    closeModal('reward-modal');
+    renderRewards();
+    toast('Reward "'+name+'" created!','ok');
+  }
+
+  async function deleteReward(id) {
+    if (!confirm('Delete this reward?')) return;
+    await sb.from('hf_earned').delete().eq('reward_id',id);
+    await sb.from('hf_rewards').delete().eq('id',id);
+    rewards = rewards.filter(r => r.id!==id);
+    renderRewards();
+    toast('Reward deleted.','inf');
+  }
+
+  async function checkMilestones(campaignId) {
+    const s = streak(campaignId);
+    const total = checkins.filter(ci => ci.campaign_id===campaignId).length;
+    for (const r of rewards) {
+      if (r.campaign_id && r.campaign_id !== campaignId) continue;
+      const alreadyEarned = r._earned && r._earned.length > 0;
+      if (alreadyEarned && !r.is_repeatable) continue;
+      let met = false;
+      if (r.trigger_type==='streak'  && s      >= r.trigger_value) met=true;
+      if (r.trigger_type==='total'   && total  >= r.trigger_value) met=true;
+      if (r.trigger_type==='points'  && totalPts >= r.trigger_value) met=true;
+      if (!met) continue;
+      const { data } = await sb.from('hf_earned').insert({reward_id:r.id}).select().single();
+      if (!r._earned) r._earned = [];
+      r._earned.push(data);
+      if (r.bonus_points > 0) {
+        totalPts += r.bonus_points;
+        await sb.from('hf_settings').update({total_points:totalPts}).eq('id','user');
+        updatePtsUI();
+        document.getElementById('st-pts').textContent = totalPts.toLocaleString();
+      }
+      toast('🎉 Reward unlocked: "'+r.name+'"! +'+r.bonus_points+' pts','ok');
+      renderRewards();
+    }
+  }
+
+  // ── Helpers ───────────────────────────────
+  function todayStr() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  function isDue(camp) {
+    if (!camp.is_active) return false;
+    const today = todayStr();
+    if (camp.start_date && camp.start_date > today) return false;
+    if (camp.end_date   && camp.end_date   < today) return false;
+    const dow = new Date().getDay();
+    switch(camp.frequency) {
+      case 'daily':    return true;
+      case 'weekdays': return dow>=1 && dow<=5;
+      case 'weekends': return dow===0 || dow===6;
+      case 'custom':   return Array.isArray(camp.custom_days) && camp.custom_days.includes(dow);
+      default:         return true;
+    }
+  }
+
+  function streak(campaignId) {
+    const dates = checkins
+      .filter(ci => ci.campaign_id===campaignId)
+      .map(ci => ci.checked_date)
+      .sort((a,b) => b.localeCompare(a));
+    if (!dates.length) return 0;
+    const today = todayStr();
+    const yest  = offset(-1);
+    if (!dates.includes(today) && !dates.includes(yest)) return 0;
+    let cur = dates.includes(today) ? today : yest;
+    let s = 0;
+    const camp = campaigns.find(c => c.id===campaignId);
+    let safety = 0;
+    while(safety++ < 400) {
+      if (dates.includes(cur)) { s++; cur = offset(-1, cur); }
+      else if (camp && camp.frequency !== 'daily') { cur = offset(-1, cur); }
+      else break;
+      if (cur < offset(-365)) break;
+    }
+    return s;
+  }
+
+  function offset(days, fromStr=null) {
+    const d = fromStr ? new Date(fromStr+'T00:00:00') : new Date();
+    d.setDate(d.getDate()+days);
+    return d.toISOString().split('T')[0];
+  }
+
+  function calcProg(camp) {
+    const s = new Date(camp.start_date).getTime();
+    const e = new Date(camp.end_date).getTime();
+    return Math.min(100, Math.max(0, Math.round((Date.now()-s)/(e-s)*100)));
+  }
+
+  function updatePtsUI() {
+    document.getElementById('sb-pts').textContent  = totalPts.toLocaleString();
+    document.getElementById('st-pts').textContent  = totalPts.toLocaleString();
+  }
+
+  // ── Modal ─────────────────────────────────
+  function openModal(id) {
+    const el = document.getElementById(id);
+    el.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    if (id === 'reward-modal') {
+      const sel = document.getElementById('r-camp');
+      sel.innerHTML = '<option value="">Any campaign</option>' +
+        campaigns.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    }
+  }
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  function modalOutside(e, id) {
+    if (e.target === document.getElementById(id)) closeModal(id);
+  }
+
+  return { boot, connect, resetSetup, nav, openModal, closeModal, modalOutside,
+           freqChange, createCampaign, toggleCampaign, deleteCampaign,
+           checkin, createReward, deleteReward };
+})();
+
+// ── Utilities ──────────────────────────────
+let _toastTimer;
+function toast(msg, type='inf') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast '+type;
+  el.classList.remove('hidden');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.add('hidden'), 3500);
+}
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.remove('hidden');
+}
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Day picker
+document.querySelectorAll('.dbtn').forEach(b => b.addEventListener('click',() => b.classList.toggle('on')));
+
+// Boot
+App.boot();
+</script>
+</body>
+</html>
